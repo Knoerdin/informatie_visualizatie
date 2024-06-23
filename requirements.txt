@@ -5,3 +5,5 @@ numpy
 pandas
 plotly
 seaborn
+plotnine
+ipywidgets
