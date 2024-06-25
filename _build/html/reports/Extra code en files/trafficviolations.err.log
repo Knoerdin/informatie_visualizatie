@@ -1,72 +1,83 @@
 Traceback (most recent call last):
-  File "/Users/nordin/opt/anaconda3/envs/jupyterbook/lib/python3.10/site-packages/jupyter_cache/executors/utils.py", line 58, in single_nb_execution
+  File "C:\Users\lenna\miniconda3\envs\jupyterbook\lib\site-packages\jupyter_cache\executors\utils.py", line 58, in single_nb_execution
     executenb(
-  File "/Users/nordin/opt/anaconda3/envs/jupyterbook/lib/python3.10/site-packages/nbclient/client.py", line 1305, in execute
+  File "C:\Users\lenna\miniconda3\envs\jupyterbook\lib\site-packages\nbclient\client.py", line 1314, in execute
     return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()
-  File "/Users/nordin/opt/anaconda3/envs/jupyterbook/lib/python3.10/site-packages/jupyter_core/utils/__init__.py", line 165, in wrapped
+  File "C:\Users\lenna\miniconda3\envs\jupyterbook\lib\site-packages\jupyter_core\utils\__init__.py", line 165, in wrapped
     return loop.run_until_complete(inner)
-  File "/Users/nordin/opt/anaconda3/envs/jupyterbook/lib/python3.10/asyncio/base_events.py", line 649, in run_until_complete
+  File "C:\Users\lenna\miniconda3\envs\jupyterbook\lib\asyncio\base_events.py", line 649, in run_until_complete
     return future.result()
-  File "/Users/nordin/opt/anaconda3/envs/jupyterbook/lib/python3.10/site-packages/nbclient/client.py", line 705, in async_execute
+  File "C:\Users\lenna\miniconda3\envs\jupyterbook\lib\site-packages\nbclient\client.py", line 709, in async_execute
     await self.async_execute_cell(
-  File "/Users/nordin/opt/anaconda3/envs/jupyterbook/lib/python3.10/site-packages/nbclient/client.py", line 1058, in async_execute_cell
+  File "C:\Users\lenna\miniconda3\envs\jupyterbook\lib\site-packages\nbclient\client.py", line 1062, in async_execute_cell
     await self._check_raise_for_error(cell, cell_index, exec_reply)
-  File "/Users/nordin/opt/anaconda3/envs/jupyterbook/lib/python3.10/site-packages/nbclient/client.py", line 914, in _check_raise_for_error
+  File "C:\Users\lenna\miniconda3\envs\jupyterbook\lib\site-packages\nbclient\client.py", line 918, in _check_raise_for_error
     raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
 nbclient.exceptions.CellExecutionError: An error occurred while executing the following cell:
 ------------------
-# Convert the 'Date Of Stop' in violations_df to a consistent date format
-violations_df['Date Of Stop'] = pd.to_datetime(violations_df['Date Of Stop'], errors='coerce', infer_datetime_format=True)
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import plotly.express as px
 
-# Convert the 'Start_Time' in accidents_df to a consistent date format
-accidents_df['Start_Time'] = pd.to_datetime(accidents_df['Start_Time'], errors='coerce', infer_datetime_format=True)
+# Load the data files
+traffic_violations = pd.read_csv('../resources/traffic_violations_filtered.csv')
+us_accidents = pd.read_csv('../resources/us_accidents_filtered_rows.csv')
 
-# Define a function to map 'Yes'/'No' to 1/0
-def map_yes_no(val):
-    return 1 if val == 'Yes' else 0
+traffic_violations['Accident'] = traffic_violations['Accident'].map({'Yes': 1, 'No': 0})
+traffic_violations['Belts'] = traffic_violations['Belts'].map({'Yes': 1, 'No': 0})
+traffic_violations['Personal Injury'] = traffic_violations['Personal Injury'].map({'Yes': 1, 'No': 0})
+traffic_violations['Fatal'] = traffic_violations['Fatal'].map({'Yes': 1, 'No': 0})
+traffic_violations['Alcohol'] = traffic_violations['Alcohol'].map({'Yes': 1, 'No': 0})
+traffic_violations['Work Zone'] = traffic_violations['Work Zone'].map({'Yes': 1, 'No': 0})
+traffic_violations['Contributed To Accident'] = traffic_violations['Contributed To Accident'].map({'Yes': 1, 'No': 0})
 
-# Apply the function to relevant columns in violations_df
-violations_df['Accident'] = violations_df['Accident'].apply(map_yes_no)
-violations_df['Belts'] = violations_df['Belts'].apply(map_yes_no)
-violations_df['Personal Injury'] = violations_df['Personal Injury'].apply(map_yes_no)
-violations_df['Fatal'] = violations_df['Fatal'].apply(map_yes_no)
-violations_df['Alcohol'] = violations_df['Alcohol'].apply(map_yes_no)
+us_accidents['Astronomical_Twilight'] = us_accidents['Astronomical_Twilight'].map({'Day' : 1, 'Night' : 0})
+us_accidents['Civil_Twilight'] = us_accidents['Civil_Twilight'].map({'Day' : 1, 'Night' : 0})
+us_accidents['Nautical_Twilight'] = us_accidents['Nautical_Twilight'].map({'Day' : 1, 'Night' : 0})
 
-# Aggregate traffic violations by date and state
-violations_agg = violations_df.groupby(['Date Of Stop', 'State']).agg({
+# Convert date columns to datetime
+date_format = '%Y-%m-%d'
+us_accidents['Start_Time'] = pd.to_datetime(us_accidents['Start_Time'], format= "%Y-%m-%d %H:%M:%S")
+traffic_violations['Date Of Stop'] = pd.to_datetime(traffic_violations['Date Of Stop'], format= date_format)
+
+# Extract date parts for aggregation
+us_accidents['Date'] = us_accidents['Start_Time'].dt.date
+traffic_violations['Date'] = traffic_violations['Date Of Stop'].dt.date
+
+# Aggregate data by date and state
+us_accidents_agg = us_accidents.groupby(['Date']).agg({
+    'Severity': 'mean', 
+    'Distance(mi)': 'sum'
+}).reset_index()
+
+traffic_violations_agg = traffic_violations.groupby(['Date', 'State']).agg({
     'Accident': 'sum',
     'Belts': 'sum',
     'Personal Injury': 'sum',
     'Fatal': 'sum',
-    'Alcohol': 'sum'
+    'Alcohol': 'sum',
+    'Work Zone': 'sum',
+    'Contributed To Accident': 'sum'
 }).reset_index()
 
-# Aggregate traffic accidents by date and state
-accidents_agg = accidents_df.groupby([accidents_df['Start_Time'].dt.date, 'State']).size().reset_index(name='Accidents')
+# Merge datasets on date
+merged_data = pd.merge(us_accidents_agg, traffic_violations_agg, on='Date', how='inner')
 
-# Rename the date column in accidents_agg to match violations_agg
-accidents_agg.rename(columns={'Start_Time': 'Date Of Stop'}, inplace=True)
+# Compute correlation matrix
+correlation_matrix = merged_data.corr(numeric_only= True)
 
-# Convert 'Date Of Stop' in accidents_agg to datetime to match violations_agg
-accidents_agg['Date Of Stop'] = pd.to_datetime(accidents_agg['Date Of Stop'])
+correlation_matrix
 
-# Merge the aggregated dataframes on date and state
-merged_df = pd.merge(violations_agg, accidents_agg, on=['Date Of Stop', 'State'])
-
-# Plotting the pair plot
-sns.pairplot(merged_df[['Accidents', 'Accident', 'Belts', 'Personal Injury', 'Fatal', 'Alcohol']])
-plt.suptitle('Pair Plot of Traffic Violations and Accidents', y=1.02)
-plt.show()
 ------------------
 
 
-[0;31m---------------------------------------------------------------------------[0m
-[0;31mNameError[0m                                 Traceback (most recent call last)
-Cell [0;32mIn[4], line 2[0m
-[1;32m      1[0m [38;5;66;03m# Convert the 'Date Of Stop' in violations_df to a consistent date format[39;00m
-[0;32m----> 2[0m violations_df[[38;5;124m'[39m[38;5;124mDate Of Stop[39m[38;5;124m'[39m] [38;5;241m=[39m pd[38;5;241m.[39mto_datetime([43mviolations_df[49m[[38;5;124m'[39m[38;5;124mDate Of Stop[39m[38;5;124m'[39m], errors[38;5;241m=[39m[38;5;124m'[39m[38;5;124mcoerce[39m[38;5;124m'[39m, infer_datetime_format[38;5;241m=[39m[38;5;28;01mTrue[39;00m)
-[1;32m      4[0m [38;5;66;03m# Convert the 'Start_Time' in accidents_df to a consistent date format[39;00m
-[1;32m      5[0m accidents_df[[38;5;124m'[39m[38;5;124mStart_Time[39m[38;5;124m'[39m] [38;5;241m=[39m pd[38;5;241m.[39mto_datetime(accidents_df[[38;5;124m'[39m[38;5;124mStart_Time[39m[38;5;124m'[39m], errors[38;5;241m=[39m[38;5;124m'[39m[38;5;124mcoerce[39m[38;5;124m'[39m, infer_datetime_format[38;5;241m=[39m[38;5;28;01mTrue[39;00m)
+[1;31m---------------------------------------------------------------------------[0m
+[1;31mModuleNotFoundError[0m                       Traceback (most recent call last)
+Cell [1;32mIn[1], line 1[0m
+[1;32m----> 1[0m [38;5;28;01mimport[39;00m [38;5;21;01mpandas[39;00m [38;5;28;01mas[39;00m [38;5;21;01mpd[39;00m
+[0;32m      2[0m [38;5;28;01mimport[39;00m [38;5;21;01mmatplotlib[39;00m[38;5;21;01m.[39;00m[38;5;21;01mpyplot[39;00m [38;5;28;01mas[39;00m [38;5;21;01mplt[39;00m
+[0;32m      3[0m [38;5;28;01mimport[39;00m [38;5;21;01mseaborn[39;00m [38;5;28;01mas[39;00m [38;5;21;01msns[39;00m
 
-[0;31mNameError[0m: name 'violations_df' is not defined
+[1;31mModuleNotFoundError[0m: No module named 'pandas'
 
