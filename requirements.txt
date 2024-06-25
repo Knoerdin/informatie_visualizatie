@@ -7,3 +7,8 @@ plotly
 seaborn
 plotnine
 ipywidgets
+IPython
+jupyter-sphinx
+sphinx-togglebutton
+sphinx-copybutton
+nbsphinx
