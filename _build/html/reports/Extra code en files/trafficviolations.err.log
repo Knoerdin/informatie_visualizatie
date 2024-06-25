@@ -15,58 +15,31 @@ Traceback (most recent call last):
     raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
 nbclient.exceptions.CellExecutionError: An error occurred while executing the following cell:
 ------------------
-# Convert the 'Date Of Stop' in violations_df to a consistent date format
-violations_df['Date Of Stop'] = pd.to_datetime(violations_df['Date Of Stop'], errors='coerce', infer_datetime_format=True)
+traffic_violations['Accident'] = traffic_violations['Accident'].map({'Yes': 1, 'No': 0})
+traffic_violations['Belts'] = traffic_violations['Belts'].map({'Yes': 1, 'No': 0})
+traffic_violations['Personal Injury'] = traffic_violations['Personal Injury'].map({'Yes': 1, 'No': 0})
+traffic_violations['Fatal'] = traffic_violations['Fatal'].map({'Yes': 1, 'No': 0})
+traffic_violations['Alcohol'] = traffic_violations['Alcohol'].map({'Yes': 1, 'No': 0})
+traffic_violations['Work Zone'] = traffic_violations['Work Zone'].map({'Yes': 1, 'No': 0})
+traffic_violations['Contributed To Accident'] = traffic_violations['Contributed To Accident'].map({'Yes': 1, 'No': 0})
 
-# Convert the 'Start_Time' in accidents_df to a consistent date format
-accidents_df['Start_Time'] = pd.to_datetime(accidents_df['Start_Time'], errors='coerce', infer_datetime_format=True)
+df_accidents['Astronomical_Twilight'] = df_accidents['Astronomical_Twilight'].map({'Day' : 1, 'Night' : 0})
+df_accidents['Civil_Twilight'] = df_accidents['Civil_Twilight'].map({'Day' : 1, 'Night' : 0})
+df_accidents['Nautical_Twilight'] = df_accidents['Nautical_Twilight'].map({'Day' : 1, 'Night' : 0})
 
-# Define a function to map 'Yes'/'No' to 1/0
-def map_yes_no(val):
-    return 1 if val == 'Yes' else 0
-
-# Apply the function to relevant columns in violations_df
-violations_df['Accident'] = violations_df['Accident'].apply(map_yes_no)
-violations_df['Belts'] = violations_df['Belts'].apply(map_yes_no)
-violations_df['Personal Injury'] = violations_df['Personal Injury'].apply(map_yes_no)
-violations_df['Fatal'] = violations_df['Fatal'].apply(map_yes_no)
-violations_df['Alcohol'] = violations_df['Alcohol'].apply(map_yes_no)
-
-# Aggregate traffic violations by date and state
-violations_agg = violations_df.groupby(['Date Of Stop', 'State']).agg({
-    'Accident': 'sum',
-    'Belts': 'sum',
-    'Personal Injury': 'sum',
-    'Fatal': 'sum',
-    'Alcohol': 'sum'
-}).reset_index()
-
-# Aggregate traffic accidents by date and state
-accidents_agg = accidents_df.groupby([accidents_df['Start_Time'].dt.date, 'State']).size().reset_index(name='Accidents')
-
-# Rename the date column in accidents_agg to match violations_agg
-accidents_agg.rename(columns={'Start_Time': 'Date Of Stop'}, inplace=True)
-
-# Convert 'Date Of Stop' in accidents_agg to datetime to match violations_agg
-accidents_agg['Date Of Stop'] = pd.to_datetime(accidents_agg['Date Of Stop'])
-
-# Merge the aggregated dataframes on date and state
-merged_df = pd.merge(violations_agg, accidents_agg, on=['Date Of Stop', 'State'])
-
-# Plotting the pair plot
-sns.pairplot(merged_df[['Accidents', 'Accident', 'Belts', 'Personal Injury', 'Fatal', 'Alcohol']])
-plt.suptitle('Pair Plot of Traffic Violations and Accidents', y=1.02)
-plt.show()
+df_accidents.corr(numeric_only = True)
+traffic_violations.corr(numeric_only = True)
 ------------------
 
 
 [0;31m---------------------------------------------------------------------------[0m
 [0;31mNameError[0m                                 Traceback (most recent call last)
-Cell [0;32mIn[4], line 2[0m
-[1;32m      1[0m [38;5;66;03m# Convert the 'Date Of Stop' in violations_df to a consistent date format[39;00m
-[0;32m----> 2[0m violations_df[[38;5;124m'[39m[38;5;124mDate Of Stop[39m[38;5;124m'[39m] [38;5;241m=[39m pd[38;5;241m.[39mto_datetime([43mviolations_df[49m[[38;5;124m'[39m[38;5;124mDate Of Stop[39m[38;5;124m'[39m], errors[38;5;241m=[39m[38;5;124m'[39m[38;5;124mcoerce[39m[38;5;124m'[39m, infer_datetime_format[38;5;241m=[39m[38;5;28;01mTrue[39;00m)
-[1;32m      4[0m [38;5;66;03m# Convert the 'Start_Time' in accidents_df to a consistent date format[39;00m
-[1;32m      5[0m accidents_df[[38;5;124m'[39m[38;5;124mStart_Time[39m[38;5;124m'[39m] [38;5;241m=[39m pd[38;5;241m.[39mto_datetime(accidents_df[[38;5;124m'[39m[38;5;124mStart_Time[39m[38;5;124m'[39m], errors[38;5;241m=[39m[38;5;124m'[39m[38;5;124mcoerce[39m[38;5;124m'[39m, infer_datetime_format[38;5;241m=[39m[38;5;28;01mTrue[39;00m)
+Cell [0;32mIn[2], line 9[0m
+[1;32m      6[0m traffic_violations[[38;5;124m'[39m[38;5;124mWork Zone[39m[38;5;124m'[39m] [38;5;241m=[39m traffic_violations[[38;5;124m'[39m[38;5;124mWork Zone[39m[38;5;124m'[39m][38;5;241m.[39mmap({[38;5;124m'[39m[38;5;124mYes[39m[38;5;124m'[39m: [38;5;241m1[39m, [38;5;124m'[39m[38;5;124mNo[39m[38;5;124m'[39m: [38;5;241m0[39m})
+[1;32m      7[0m traffic_violations[[38;5;124m'[39m[38;5;124mContributed To Accident[39m[38;5;124m'[39m] [38;5;241m=[39m traffic_violations[[38;5;124m'[39m[38;5;124mContributed To Accident[39m[38;5;124m'[39m][38;5;241m.[39mmap({[38;5;124m'[39m[38;5;124mYes[39m[38;5;124m'[39m: [38;5;241m1[39m, [38;5;124m'[39m[38;5;124mNo[39m[38;5;124m'[39m: [38;5;241m0[39m})
+[0;32m----> 9[0m df_accidents[[38;5;124m'[39m[38;5;124mAstronomical_Twilight[39m[38;5;124m'[39m] [38;5;241m=[39m [43mdf_accidents[49m[[38;5;124m'[39m[38;5;124mAstronomical_Twilight[39m[38;5;124m'[39m][38;5;241m.[39mmap({[38;5;124m'[39m[38;5;124mDay[39m[38;5;124m'[39m : [38;5;241m1[39m, [38;5;124m'[39m[38;5;124mNight[39m[38;5;124m'[39m : [38;5;241m0[39m})
+[1;32m     10[0m df_accidents[[38;5;124m'[39m[38;5;124mCivil_Twilight[39m[38;5;124m'[39m] [38;5;241m=[39m df_accidents[[38;5;124m'[39m[38;5;124mCivil_Twilight[39m[38;5;124m'[39m][38;5;241m.[39mmap({[38;5;124m'[39m[38;5;124mDay[39m[38;5;124m'[39m : [38;5;241m1[39m, [38;5;124m'[39m[38;5;124mNight[39m[38;5;124m'[39m : [38;5;241m0[39m})
+[1;32m     11[0m df_accidents[[38;5;124m'[39m[38;5;124mNautical_Twilight[39m[38;5;124m'[39m] [38;5;241m=[39m df_accidents[[38;5;124m'[39m[38;5;124mNautical_Twilight[39m[38;5;124m'[39m][38;5;241m.[39mmap({[38;5;124m'[39m[38;5;124mDay[39m[38;5;124m'[39m : [38;5;241m1[39m, [38;5;124m'[39m[38;5;124mNight[39m[38;5;124m'[39m : [38;5;241m0[39m})
 
-[0;31mNameError[0m: name 'violations_df' is not defined
+[0;31mNameError[0m: name 'df_accidents' is not defined
 
