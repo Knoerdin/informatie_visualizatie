@@ -1,0 +1,14 @@
+jupyter-book
+ipython3
+matplotlib
+numpy
+pandas
+plotly
+seaborn
+plotnine
+ipywidgets
+IPython
+jupyter-sphinx
+sphinx-togglebutton
+sphinx-copybutton
+nbsphinx
